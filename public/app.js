@@ -3,6 +3,8 @@ const statusEl = document.querySelector("#status");
 const reportEl = document.querySelector("#report");
 const submitButton = document.querySelector("#submit-button");
 const sampleButton = document.querySelector("#sample-button");
+const googleForm = document.querySelector("#google-sheet-form");
+const googleButton = document.querySelector("#google-button");
 const externalReportUrl = "https://erp-five-lemon.vercel.app/report";
 
 let currentPayload = null;
@@ -51,6 +53,21 @@ sampleButton.addEventListener("click", async () => {
     setStatus(error.message, true);
     setLoading(false);
   }
+});
+
+googleForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(googleForm);
+  const companyName = document.querySelector("#company-name").value || "Google Sheets ERP";
+  const analysisGoal = document.querySelector("#analysis-goal").value || "Google Sheets ERP 데이터 기반 경영 분석";
+
+  await generateDashboardFromGoogleSheet({
+    companyName,
+    analysisGoal,
+    spreadsheet: formData.get("spreadsheet"),
+    range: formData.get("range")
+  });
 });
 
 document.addEventListener("click", async (event) => {
@@ -114,6 +131,33 @@ async function generateDashboardFromUrl(payload) {
     currentPayload = data;
     renderReport(data);
     setStatus("외부 ERP URL 확인 후 대시보드가 생성되었습니다.");
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function generateDashboardFromGoogleSheet(payload) {
+  setLoading(true);
+  setStatus("Google Sheets API에서 ERP 데이터를 가져오는 중입니다...");
+  reportEl.classList.add("hidden");
+  reportEl.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/google-sheet", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Google Sheets 데이터를 가져오지 못했습니다.");
+    }
+
+    currentPayload = data;
+    renderReport(data);
+    setStatus("Google Sheets 데이터로 대시보드가 생성되었습니다.");
   } catch (error) {
     setStatus(error.message, true);
   } finally {
@@ -328,8 +372,10 @@ function toSafeFilename(value) {
 function setLoading(isLoading) {
   submitButton.disabled = isLoading;
   sampleButton.disabled = isLoading;
+  googleButton.disabled = isLoading;
   submitButton.textContent = isLoading ? "분석 중..." : "대시보드 생성";
   sampleButton.textContent = isLoading ? "분석 중..." : "샘플 데이터 가져와 생성";
+  googleButton.textContent = isLoading ? "가져오는 중..." : "Google Sheet 가져오기";
 }
 
 function setStatus(message, isError = false) {

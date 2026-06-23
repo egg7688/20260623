@@ -42,6 +42,28 @@
           <p class="muted">외부 리포트 URL에 데이터가 없으면 서버 내장 샘플 ERP 데이터로 대체 생성합니다.</p>
         </div>
 
+        <div class="integration-card">
+          <div>
+            <p class="eyebrow">Google Sheets API</p>
+            <h2>Google Sheet에서 바로 대시보드 생성</h2>
+            <p class="muted">공개 Google Sheet URL 또는 Spreadsheet ID와 범위를 입력하면 서버의 Google API 설정으로 ERP 데이터를 가져옵니다.</p>
+          </div>
+
+          <form id="google-sheet-form" class="form google-form">
+            <label>
+              Sheet URL 또는 ID
+              <input id="google-sheet" name="spreadsheet" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." required />
+            </label>
+
+            <label>
+              범위
+              <input id="google-range" name="range" type="text" placeholder="A:Z" value="A:Z" />
+            </label>
+
+            <button id="google-button" type="submit" class="secondary-button">Google Sheet 가져오기</button>
+          </form>
+        </div>
+
         <p id="status" class="status" aria-live="polite"></p>
       </section>
 

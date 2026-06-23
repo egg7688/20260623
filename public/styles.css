@@ -153,6 +153,28 @@ button {
   margin-bottom: 0;
 }
 
+.integration-card {
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  gap: 20px;
+  align-items: end;
+  margin-top: 22px;
+  border: 1px solid #d7e0f3;
+  border-radius: 24px;
+  padding: 22px;
+  background: linear-gradient(135deg, #ffffff, #f4f7ff);
+}
+
+.integration-card h2 {
+  margin-bottom: 10px;
+  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+  letter-spacing: -0.035em;
+}
+
+.google-form {
+  grid-template-columns: 1.4fr 0.6fr auto;
+}
+
 .external-login {
   display: inline-flex;
   width: fit-content;
@@ -621,6 +643,11 @@ td {
   .sample-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .integration-card,
+  .google-form {
+    grid-template-columns: 1fr;
   }
 
   .reference-item {
