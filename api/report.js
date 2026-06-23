@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error(error);
     return res.status(error.status || 500).json({
-      message: error.message || "ERP 보고서를 생성하는 중 오류가 발생했습니다."
+      message: error.message || "ERP 대시보드를 생성하는 중 오류가 발생했습니다."
     });
   }
 };

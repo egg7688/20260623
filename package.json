@@ -1,7 +1,7 @@
 {
-  "name": "erp-ai-dashboard",
+  "name": "erp-dashboard",
   "version": "1.0.0",
-  "description": "ERP CSV dashboard and AI management report generator using Gemini.",
+  "description": "ERP CSV management dashboard generator.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

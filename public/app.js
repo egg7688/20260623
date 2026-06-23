@@ -69,7 +69,7 @@ document.addEventListener("click", async (event) => {
 
 async function generateDashboard(payload) {
   setLoading(true);
-  setStatus("CSV를 분석하고 Gemini AI 보고서를 작성하는 중입니다...");
+  setStatus("CSV를 분석하고 대시보드를 생성하는 중입니다...");
   reportEl.classList.add("hidden");
   reportEl.innerHTML = "";
 
@@ -86,7 +86,7 @@ async function generateDashboard(payload) {
 
     currentPayload = data;
     renderReport(data);
-    setStatus("대시보드와 분석보고서가 생성되었습니다. PDF 또는 Word로 다운로드할 수 있습니다.");
+    setStatus("대시보드가 생성되었습니다. PDF 인쇄 또는 Word 파일로 저장할 수 있습니다.");
   } catch (error) {
     setStatus(error.message, true);
   } finally {
@@ -113,7 +113,7 @@ async function generateDashboardFromUrl(payload) {
 
     currentPayload = data;
     renderReport(data);
-    setStatus("외부 ERP URL 데이터로 대시보드와 분석보고서가 생성되었습니다.");
+    setStatus("외부 ERP URL 확인 후 대시보드가 생성되었습니다.");
   } catch (error) {
     setStatus(error.message, true);
   } finally {
@@ -122,7 +122,7 @@ async function generateDashboardFromUrl(payload) {
 }
 
 function renderReport(payload) {
-  const { dashboard, profile, report, rows } = payload;
+  const { dashboard, profile, rows } = payload;
   const charts = [
     dashboard.charts.category ? renderBarChart(dashboard.charts.category) : "",
     dashboard.charts.numeric ? renderBarChart(dashboard.charts.numeric) : "",
@@ -132,31 +132,17 @@ function renderReport(payload) {
   reportEl.innerHTML = `
     <div class="report-header">
       <p class="eyebrow">Generated Dashboard</p>
-      <h2>${escapeHtml(report.title)}</h2>
-      <p class="muted">파일: ${escapeHtml(payload.fileName)} · 생성일: ${new Date(payload.generatedAt).toLocaleString("ko-KR")} · 작성: ${escapeHtml(report.generatedBy)}</p>
+      <h2>${escapeHtml(payload.title)}</h2>
+      <p class="muted">파일: ${escapeHtml(payload.fileName)} · 생성일: ${new Date(payload.generatedAt).toLocaleString("ko-KR")} · 분석 목적: ${escapeHtml(payload.analysisGoal)}</p>
       ${payload.sourceNotice ? `<p class="notice">${escapeHtml(payload.sourceNotice)}</p>` : ""}
       <div class="download-actions">
-        <button type="button" data-download="pdf">PDF 다운로드</button>
-        <button type="button" data-download="word" class="secondary-button">Word 다운로드</button>
+        <button type="button" data-download="pdf">대시보드 PDF 인쇄</button>
+        <button type="button" data-download="word" class="secondary-button">대시보드 Word 저장</button>
         <button type="button" data-import-external class="secondary-button">외부 URL 확인 후 생성</button>
       </div>
     </div>
 
     <section class="kpi-grid">${dashboard.kpis.map(renderKpi).join("")}</section>
-
-    <section class="report-section">
-      <div class="section-heading">
-        <p class="eyebrow">AI Management Report</p>
-        <h3>Gemini AI 분석보고서</h3>
-      </div>
-      <div class="summary">${formatText(report.executiveSummary)}</div>
-    </section>
-
-    <section class="insights">
-      ${report.findings.map((item) => renderInsight("핵심 발견", item)).join("")}
-      ${report.recommendations.map((item) => renderInsight("실행 권고", item)).join("")}
-      ${report.riskNotes.map((item) => renderInsight("리스크", item)).join("")}
-    </section>
 
     <section class="chart-grid">${charts}</section>
 
@@ -282,7 +268,7 @@ function bindDownloadButtons() {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${escapeHtml(currentPayload.report.title)}</title>
+          <title>${escapeHtml(currentPayload.title)}</title>
           <style>
             body { font-family: Malgun Gothic, Arial, sans-serif; color: #172033; }
             table { border-collapse: collapse; width: 100%; margin: 16px 0; }
@@ -294,7 +280,7 @@ function bindDownloadButtons() {
         <body>${reportEl.innerHTML}</body>
       </html>
     `;
-    downloadFile(`${toSafeFilename(currentPayload.report.title)}.doc`, html, "application/msword;charset=utf-8");
+    downloadFile(`${toSafeFilename(currentPayload.title)}.doc`, html, "application/msword;charset=utf-8");
   });
 }
 

@@ -30,7 +30,7 @@ app.post("/api/report", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(error.status || 500).json({
-      message: error.message || "ERP 보고서를 생성하는 중 오류가 발생했습니다."
+      message: error.message || "ERP 대시보드를 생성하는 중 오류가 발생했습니다."
     });
   }
 });
@@ -54,7 +54,7 @@ app.post("/api/import-url", async (req, res) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`ERP dashboard report app running at http://localhost:${PORT}`);
+    console.log(`ERP dashboard app running at http://localhost:${PORT}`);
   });
 }
 
