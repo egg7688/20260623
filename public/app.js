@@ -2,6 +2,8 @@ const form = document.querySelector("#report-form");
 const statusEl = document.querySelector("#status");
 const reportEl = document.querySelector("#report");
 const submitButton = document.querySelector("#submit-button");
+const sampleButton = document.querySelector("#sample-button");
+const externalReportUrl = "https://erp-five-lemon.vercel.app/report";
 
 let currentPayload = null;
 
@@ -15,6 +17,57 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+  await generateDashboard({
+    companyName: formData.get("companyName"),
+    analysisGoal: formData.get("analysisGoal"),
+    fileName: file.name,
+    csvText: await file.text()
+  });
+});
+
+sampleButton.addEventListener("click", async () => {
+  const companyNameInput = document.querySelector("#company-name");
+  const analysisGoalInput = document.querySelector("#analysis-goal");
+
+  setLoading(true);
+  setStatus("서버에서 샘플 ERP 데이터를 가져오는 중입니다...");
+
+  try {
+    const response = await fetch("/api/sample-data");
+    const sample = await response.json();
+    if (!response.ok) {
+      throw new Error(sample.message || "샘플 데이터를 가져오지 못했습니다.");
+    }
+
+    companyNameInput.value = companyNameInput.value || sample.companyName;
+    analysisGoalInput.value = analysisGoalInput.value || sample.analysisGoal;
+
+    await generateDashboard({
+      ...sample,
+      companyName: companyNameInput.value,
+      analysisGoal: analysisGoalInput.value
+    });
+  } catch (error) {
+    setStatus(error.message, true);
+    setLoading(false);
+  }
+});
+
+document.addEventListener("click", async (event) => {
+  if (!event.target.matches("[data-import-external]")) {
+    return;
+  }
+
+  const companyName = document.querySelector("#company-name").value || "외부 ERP 리포트";
+  const analysisGoal = document.querySelector("#analysis-goal").value || "외부 ERP 리포트 URL 기반 경영 분석";
+  await generateDashboardFromUrl({
+    companyName,
+    analysisGoal,
+    sourceUrl: externalReportUrl
+  });
+});
+
+async function generateDashboard(payload) {
   setLoading(true);
   setStatus("CSV를 분석하고 Gemini AI 보고서를 작성하는 중입니다...");
   reportEl.classList.add("hidden");
@@ -24,14 +77,8 @@ form.addEventListener("submit", async (event) => {
     const response = await fetch("/api/report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        companyName: formData.get("companyName"),
-        analysisGoal: formData.get("analysisGoal"),
-        fileName: file.name,
-        csvText: await file.text()
-      })
+      body: JSON.stringify(payload)
     });
-
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || "요청에 실패했습니다.");
@@ -45,7 +92,34 @@ form.addEventListener("submit", async (event) => {
   } finally {
     setLoading(false);
   }
-});
+}
+
+async function generateDashboardFromUrl(payload) {
+  setLoading(true);
+  setStatus("외부 ERP URL에서 데이터를 가져와 대시보드를 생성하는 중입니다...");
+  reportEl.classList.add("hidden");
+  reportEl.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/import-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "외부 URL 데이터를 가져오지 못했습니다.");
+    }
+
+    currentPayload = data;
+    renderReport(data);
+    setStatus("외부 ERP URL 데이터로 대시보드와 분석보고서가 생성되었습니다.");
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    setLoading(false);
+  }
+}
 
 function renderReport(payload) {
   const { dashboard, profile, report, rows } = payload;
@@ -60,9 +134,11 @@ function renderReport(payload) {
       <p class="eyebrow">Generated Dashboard</p>
       <h2>${escapeHtml(report.title)}</h2>
       <p class="muted">파일: ${escapeHtml(payload.fileName)} · 생성일: ${new Date(payload.generatedAt).toLocaleString("ko-KR")} · 작성: ${escapeHtml(report.generatedBy)}</p>
+      ${payload.sourceNotice ? `<p class="notice">${escapeHtml(payload.sourceNotice)}</p>` : ""}
       <div class="download-actions">
         <button type="button" data-download="pdf">PDF 다운로드</button>
         <button type="button" data-download="word" class="secondary-button">Word 다운로드</button>
+        <button type="button" data-import-external class="secondary-button">외부 URL 확인 후 생성</button>
       </div>
     </div>
 
@@ -265,7 +341,9 @@ function toSafeFilename(value) {
 
 function setLoading(isLoading) {
   submitButton.disabled = isLoading;
+  sampleButton.disabled = isLoading;
   submitButton.textContent = isLoading ? "분석 중..." : "대시보드 생성";
+  sampleButton.textContent = isLoading ? "분석 중..." : "샘플 데이터 가져와 생성";
 }
 
 function setStatus(message, isError = false) {

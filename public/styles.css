@@ -141,6 +141,18 @@ button {
   gap: 10px;
 }
 
+.sample-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.sample-actions p {
+  margin-bottom: 0;
+}
+
 .external-login {
   display: inline-flex;
   width: fit-content;
@@ -174,6 +186,15 @@ button:disabled {
 
 .download-actions button {
   padding: 12px 16px;
+}
+
+.notice {
+  border: 1px solid #cfd9f2;
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: #3153d4;
+  font-weight: 800;
+  background: #f2f6ff;
 }
 
 .kpi-grid,
@@ -597,6 +618,11 @@ td {
     width: 100%;
   }
 
+  .sample-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .reference-item {
     align-items: flex-start;
     flex-direction: column;
@@ -610,6 +636,7 @@ td {
 
   .hero,
   .panel,
+  .sample-actions,
   .download-actions {
     display: none;
   }
